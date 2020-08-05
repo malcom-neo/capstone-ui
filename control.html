@@ -14,19 +14,6 @@
 
     <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/masonry/4.2.2/masonry.pkgd.min.js" integrity="sha384-GNFwBvfVxBkLMJpYMOABq3c+d3KnQxudP/mGPkzpZSTYykLBNsZEnG2D9G/X/+7D" crossorigin="anonymous" async=""></script>-->
 
-    <!-- Optional JavaScript -->
-    <!-- Popper.js first, then Bootstrap JS -->
-    <script
-      src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
-      integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
-      crossorigin="anonymous"
-    ></script>
-    <script
-      src="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha1/js/bootstrap.min.js"
-      integrity="sha384-oesi62hOLfzrys4LxRF63OJCXdXDipiYWBnvTl9Y9/TRlw5xlKIEHpNyvvDShgf/"
-      crossorigin="anonymous"
-    ></script>
-
     <!-- roslibjs -->
     <script src="http://static.robotwebtools.org/EventEmitter2/current/eventemitter2.min.js"></script>
     <script src="http://static.robotwebtools.org/roslibjs/current/roslib.min.js"></script>
@@ -133,16 +120,24 @@
               <ul class="list-group">
                 <li
                   id="mfl-reading-container"
-                  class="d-flex list-group-item justify-content-between list-group-item-success"
+                  class="d-flex list-group-item justify-content-between list-group-item-secondary"
                 >
                   <div>MFL</div>
-                  <div id="mfl-reading">123.45 µT</div>
+                  <div id="mfl-reading">?</div>
                 </li>
                 <li
-                  class="d-flex list-group-item justify-content-between list-group-item-warning"
+                  id="linear-speed-reading-container"
+                  class="d-flex list-group-item justify-content-between list-group-item-secondary"
                 >
-                  <div>Speed</div>
-                  <div id="speed-reading">12.34 cm/s</div>
+                  <div>Linear speed</div>
+                  <div id="linear-speed-reading">?</div>
+                </li>
+                <li
+                  id="angular-speed-reading-container"
+                  class="d-flex list-group-item justify-content-between list-group-item-secondary"
+                >
+                  <div>Angular speed</div>
+                  <div id="angular-speed-reading">?</div>
                 </li>
                 <li
                   id="lidar-reading-container"
@@ -171,10 +166,22 @@
             <div class="col-lg-6 d-flex">
               <div
                 class="border rounded flex-fill text-center"
+                style="display: inline-block; position: relative;"
                 id="progress-map"
               >
-                <img class="img-fluid" src="control-progress.png" />
-                <!-- <canvas id="progress-map-canvas"></canvas> -->
+                <!-- <img class="img-fluid" src="control-progress.png" /> -->
+                <canvas id="progress-map-canvas"></canvas>
+                <img
+                  id="progress-map-pointer"
+                  src="redarrow.png"
+                  style="
+                    position: absolute;
+                    top: 0%;
+                    left: 0%;
+                    width: 5%;
+                    height: 5%;
+                  "
+                />
               </div>
             </div>
             <div class="col-lg-12 d-flex">
@@ -324,17 +331,25 @@
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
-          <div class="modal-body d-flex justify-content-center">
-            <canvas
-              id="map-canvas"
-              width="384"
-              height="384"
-              class="border rounded"
-            ></canvas>
+          <div class="modal-body row m-2">
+            <textarea id="rosmap-area" readonly></textarea>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- Optional JavaScript -->
+    <!-- Popper.js first, then Bootstrap JS -->
+    <script
+      src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+      integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha1/js/bootstrap.min.js"
+      integrity="sha384-oesi62hOLfzrys4LxRF63OJCXdXDipiYWBnvTl9Y9/TRlw5xlKIEHpNyvvDShgf/"
+      crossorigin="anonymous"
+    ></script>
 
     <script src="https://yoannmoinet.github.io/nipplejs/javascripts/nipplejs.js"></script>
 
