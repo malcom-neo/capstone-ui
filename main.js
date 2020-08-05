@@ -5,6 +5,16 @@
   // TODO: Make it possible to change and specify the address.
   const ws_spec = "ws://10.21.130.23:9090";
 
+  let map_info = {
+    ros_info: null,
+    bounding_box: {
+      x: null,
+      y: null,
+      h: null,
+      w: null,
+    },
+  };
+
   /**
    * Write grayscale value into RGBA-bitmap data array.
    * @param {Uint8ClampedArray} data ImageData array.
@@ -89,7 +99,7 @@
    */
   function attachReadingUpdater(topic, name, normalizer, formatter) {
     topic.subscribe(function (msg) {
-      console.log(`Message received on ${topic.name} for prefix ${name}`);
+      // console.log(`Message received on ${topic.name} for prefix ${name}`);
       const reading = normalizer(msg);
       let style;
       if (typeof reading !== "number" || isNaN(reading) || reading > 100) {
@@ -154,7 +164,34 @@
 
     pointer.style.transform = `translate(${wpct * wmax}px, ${
       hpct * hmax
-    }px) rotate(${deg}deg)`;
+    }px) rotate(${deg})`;
+  }
+
+  function translateRosCoordToPointer(position) {
+    if (map_info.ros_info === null || map_info.bounding_box.x === null) {
+      return [0, 0];
+    }
+
+    const x_disp = position.x - map_info.ros_info.origin.position.x;
+    const y_disp = position.y - map_info.ros_info.origin.position.y;
+
+    const x_pixdist = x_disp / map_info.ros_info.resolution;
+    const y_pixdist = y_disp / map_info.ros_info.resolution;
+
+    const x_relativetobound =
+      (x_pixdist - map_info.bounding_box.x) / map_info.bounding_box.w;
+    const y_relativetobound =
+      (y_pixdist - map_info.bounding_box.y) / map_info.bounding_box.h;
+
+    if (x_relativetobound < 0 || x_relativetobound > 1) {
+      console.warn(`Relative x-coord ${x_relativetobound} out of bounds`);
+    }
+
+    if (y_relativetobound < 0 || y_relativetobound > 1) {
+      console.warn(`Relative y-coord ${y_relativetobound} out of bounds`);
+    }
+
+    return [x_relativetobound, y_relativetobound];
   }
 
   /*******************************************************
@@ -194,6 +231,8 @@
     const rosmap_width = msg.info.width;
     const rosmap_height = msg.info.height;
 
+    map_info.ros_info = msg.info;
+
     // Very slow
     // document.getElementById("rosmap-area").textContent = JSON.stringify(msg);
 
@@ -226,6 +265,13 @@
 
     const bound_width = max_x - min_x;
     const bound_height = max_y - min_y;
+
+    map_info.bounding_box = {
+      x: min_x,
+      y: min_y,
+      h: bound_height,
+      w: bound_width,
+    };
 
     const resize_cb = function () {
       if (canvas.currentBitmap !== undefined) {
@@ -263,17 +309,36 @@
   });
   */
 
-  /*
   const listener_position = new ROSLIB.Topic({
     ros: ros,
-    name: '',
-    messageType: ''
+    name: "/amcl_pose",
+    messageType: "geometry_msgs/PoseWithCovarianceStamped",
   });
 
-  listener_position.subscribe(function(msg){
-    
+  listener_position.subscribe(function (msg) {
+    console.log("amcl_pose");
+    // const { x: pos_x, y: pos_y } = msg.pose.pose.position;
+    const { z: or_z, w: or_w } = msg.pose.pose.orientation;
+
+    const do_move = function () {
+      const [x_frac, y_frac] = translateRosCoordToPointer(
+        msg.pose.pose.position
+      );
+
+      // Wtf?
+      const ang_rad = Math.asin(or_z) / 2;
+
+      moveMapPointerFractional(x_frac, y_frac, `${ang_rad}rad`);
+    };
+
+    // Check for map info. If it's not there, we need to wait until it's available and try again
+    if (map_info.ros_info === null || map_info.bounding_box.x === null) {
+      setTimeout(do_move, 1);
+    } else {
+      // Do it now
+      do_move();
+    }
   });
-  */
 
   const listener_vel = new ROSLIB.Topic({
     ros: ros,
@@ -343,7 +408,12 @@
   }
 
   window.addEventListener("resize", resizeMapCanvas);
-  window.moveMapPointer = moveMapPointer;
-  window.moveMapPointerFractional = moveMapPointerFractional;
-  window.changeProgressBar = changeProgressBar;
+  // For f12 tools
+  window.debug = {
+    moveMapPointer,
+    moveMapPointerFractional,
+    changeProgressBar,
+    listener_position,
+    listener_map,
+  };
 })();
