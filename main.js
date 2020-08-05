@@ -130,9 +130,10 @@
 
   /**
    * Move the red pointer on top of the map canvas.
-   * @param {Number} x
-   * @param {Number} y
-   * @param {Number} deg
+   * You probably don't want this.
+   * @param {Number} x raw x-coordinate to translate by
+   * @param {Number} y raw y-coordinate to translate by
+   * @param {Number} deg degrees to rotate by
    */
   function moveMapPointer(x, y, deg) {
     document.getElementById(
@@ -141,12 +142,14 @@
   }
 
   /**
-   * Move the red pointer on top of the map canvas.
-   * @param {*} wpct
-   * @param {*} hpct
-   * @param {*} deg
+   * Move the red pointer on top of the map canvas. wpct and hpct must be in
+   * the interval [0,1]. angle is a string and must include the units for
+   * rotation.
+   * @param {Number} wpct normalized position along bounding box width
+   * @param {Number} hpct normalized position along bounding box height
+   * @param {String} angle angle spec for rotate() transform-function
    */
-  function moveMapPointerFractional(wpct, hpct, deg) {
+  function moveMapPointerFractional(wpct, hpct, angle) {
     if (typeof wpct !== "number" || wpct > 1 || wpct < 0) {
       console.error(`wpct not fractional: ${wpct}`);
       return;
@@ -164,9 +167,15 @@
 
     pointer.style.transform = `translate(${wpct * wmax}px, ${
       hpct * hmax
-    }px) rotate(${deg})`;
+    }px) rotate(${angle})`;
   }
 
+  /**
+   * Translate position object from ROS to a relative coordinate in the current
+   * bounding box.
+   * @param {Object} position {x,y,z} object. (Only x and y are used.)
+   * @returns [normalized position along bounding box width, ...height]
+   */
   function translateRosCoordToPointer(position) {
     if (map_info.ros_info === null || map_info.bounding_box.x === null) {
       return [0, 0];
@@ -192,6 +201,64 @@
     }
 
     return [x_relativetobound, y_relativetobound];
+  }
+
+  let next_report_id = 1;
+  let num_defects = 0;
+  /**
+   * Add a defect point to the report.
+   * @param {Number} mfl_max
+   * @param {Object} position
+   * @param {Boolean} offset
+   */
+  function addReportDefect(mfl_max, position, offset) {
+    const count = document.getElementById("report-defective-count");
+    const tbody = document.querySelector("#report-defective-table tbody");
+    const map_container = document.getElementById("report-map-container");
+
+    let top, left;
+    if (typeof position === "object") {
+      [top, left] = translateRosCoordToPointer(position);
+      if (offset) {
+        // TODO
+      }
+    } else if (typeof position === "string") {
+      [top, left] = position.split(" ");
+    } else {
+      return;
+    }
+
+    num_defects++;
+
+    count.innerHTML = `${num_defects} panel${
+      num_defects === 1 ? "" : "s"
+    } defective`;
+
+    const new_row = document.createElement("tr");
+    new_row.id = `report-defective-tr-${next_report_id}`;
+
+    const new_th = document.createElement("th");
+    new_th.scope = "row";
+    new_th.textContent = `${next_report_id}`;
+
+    const new_td = document.createElement("td");
+    new_td.textContent = `${mfl_max}`;
+
+    tbody.appendChild(new_row);
+    new_row.appendChild(new_th);
+    new_row.appendChild(new_td);
+
+    const new_badge = document.createElement("div");
+    new_badge.id = `report-defective-badge-${next_report_id}`;
+    new_badge.classList.add("badge", "rounded-pill", "bg-primary");
+    new_badge.style.position = "absolute";
+    new_badge.style.top = `${top}%`;
+    new_badge.style.left = `${left}%`;
+    new_badge.textContent = `${next_report_id}`;
+
+    map_container.appendChild(new_badge);
+
+    return next_report_id++;
   }
 
   /*******************************************************
@@ -409,9 +476,9 @@
   window.addEventListener("resize", resizeMapCanvas);
   // For f12 tools
   window.debug = {
-    moveMapPointer,
     moveMapPointerFractional,
     changeProgressBar,
+    addReportDefect,
     listener_position,
     listener_map,
   };

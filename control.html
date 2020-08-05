@@ -200,7 +200,7 @@
                 </div>
               </div>
             </div>
-            <div>
+            <div id="progress-nav-status">
               Navigation status: 32% in cell 15, next: cell 18
             </div>
           </div>
@@ -212,7 +212,7 @@
           <div class="row gy-3">
             <div class="col-lg-6">
               <div id="report-defective-count" class="py-1">
-                3 panels defective
+                0 panels defective
               </div>
               <table id="report-defective-table" class="table">
                 <thead>
@@ -222,52 +222,26 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <th scope="row">1</th>
-                    <td>5000</td>
-                  </tr>
-                  <tr>
-                    <th scope="row">2</th>
-                    <td>3000</td>
-                  </tr>
-                  <tr>
-                    <th scope="row">3</th>
-                    <td>2750</td>
-                  </tr>
+                  <!--stuff goes here-->
                 </tbody>
               </table>
 
-              <button type="button" class="btn btn-primary mt-3">
+              <button
+                id="report-export"
+                type="button"
+                class="btn btn-primary mt-3"
+              >
                 EXPORT...
               </button>
             </div>
             <div class="col-lg-6 d-flex">
               <div
-                style="
-                  position: relative;
-                  display: inline-block; /*! align-self: center; */
-                "
+                id="report-map-container"
+                style="position: relative; display: inline-block;"
                 class="mx-auto border rounded"
               >
+                <!--TODO: Replace w canvas for now-->
                 <img src="control-tankbg.png" class="img-fluid" />
-                <div
-                  class="badge rounded-pill bg-primary"
-                  style="position: absolute; top: 35%; left: 35%;"
-                >
-                  1
-                </div>
-                <div
-                  style="position: absolute; top: 70%; left: 47%;"
-                  class="badge rounded-pill bg-primary"
-                >
-                  2
-                </div>
-                <div
-                  class="badge rounded-pill bg-primary"
-                  style="position: absolute; top: 60%; left: 66%;"
-                >
-                  3
-                </div>
               </div>
             </div>
           </div>
