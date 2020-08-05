@@ -233,9 +233,6 @@
 
     map_info.ros_info = msg.info;
 
-    // Very slow
-    // document.getElementById("rosmap-area").textContent = JSON.stringify(msg);
-
     const canvas = document.getElementById("progress-map-canvas");
     const ctx = canvas.getContext("2d");
     const img_data = ctx.createImageData(rosmap_width, rosmap_height);
@@ -317,7 +314,6 @@
 
   listener_position.subscribe(function (msg) {
     console.log("amcl_pose");
-    // const { x: pos_x, y: pos_y } = msg.pose.pose.position;
     const { z: or_z, w: or_w } = msg.pose.pose.orientation;
 
     const do_move = function () {
@@ -325,13 +321,16 @@
         msg.pose.pose.position
       );
 
-      // Wtf?
-      const ang_rad = Math.asin(or_z) / 2;
+      // Wtf
+      const ang_rad = Math.atan2(
+        2 * (or_w * or_z) /*+ q.x * q.y*/,
+        1 - 2 * /*q.y * q.y +*/ (or_z * or_z)
+      );
 
       moveMapPointerFractional(x_frac, y_frac, `${ang_rad}rad`);
     };
 
-    // Check for map info. If it's not there, we need to wait until it's available and try again
+    // Check for map info. If it's not there, we need to wait until it's available and try again. Waiting for 1s should be enough
     if (map_info.ros_info === null || map_info.bounding_box.x === null) {
       setTimeout(do_move, 1);
     } else {
