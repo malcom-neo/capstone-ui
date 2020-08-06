@@ -178,6 +178,7 @@
    */
   function translateRosCoordToPointer(position) {
     if (map_info.ros_info === null || map_info.bounding_box.x === null) {
+      console.warn("Not ready to translate ros position to pointer position");
       return [0, 0];
     }
 
@@ -352,6 +353,11 @@
         // Attach this bitmap to the canvas element
         canvas.currentBitmap = bmp;
         ctx.drawImage(bmp, 0, 0);
+        // And the report canvas
+        document
+          .getElementById("report-map-canvas")
+          .getContext("2d")
+          .drawImage(bmp, 0, 0);
       });
     };
 
@@ -389,10 +395,12 @@
       );
 
       // Wtf
-      const ang_rad = Math.atan2(
-        2 * (or_w * or_z) /*+ q.x * q.y*/,
-        1 - 2 * /*q.y * q.y +*/ (or_z * or_z)
-      );
+      const ang_rad =
+        Math.atan2(
+          2 * (or_w * or_z) /*+ q.x * q.y*/,
+          1 - 2 * /*q.y * q.y +*/ (or_z * or_z)
+        ) +
+        Math.PI / 2;
 
       moveMapPointerFractional(x_frac, y_frac, `${ang_rad}rad`);
     };
@@ -445,6 +453,11 @@
       bootstrap.Modal.getInstance(modal).hide();
     };
 
+    // Report export button handler
+    document.getElementById("report-export").onclick = function (e) {
+      console.warn("Stub: Report export");
+    };
+
     // Hide stuff we're not using...
     document.getElementById("control-top").style.display = "none";
     document.getElementById("video-top").style.display = "none";
@@ -457,11 +470,13 @@
     // Get enclosing element
     const container = document.getElementById("progress-map");
     const canvas = document.getElementById("progress-map-canvas");
+    const canvas2 = document.getElementById("report-map-canvas");
 
     // TODO this doesn't work quite like I thought it would
     const side = Math.max(container.clientHeight, container.clientWidth);
     canvas.width = side;
     canvas.height = side;
+    canvas2.width = canvas2.height = side;
     console.log(`Size: ${side}`);
 
     // If we have something in the canvas, redraw it
